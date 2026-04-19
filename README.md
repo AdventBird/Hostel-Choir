@@ -15,13 +15,7 @@ A PWA (Progressive Web App) for managing the hostel choir's songs, lyrics, pitch
 
 ## For the Choir Leader
 
-**Default passcode:** `choir2025`
 
-To change the passcode:
-1. Open `index.html`
-2. Find this line near the bottom: `const LEADER_PASSCODE = "choir2025";`
-3. Change `choir2025` to your new passcode
-4. Save and push to GitHub
 
 **What leaders can do:**
 - Add new songs (title, category, pitch, lyrics)
