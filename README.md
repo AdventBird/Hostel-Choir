@@ -3,7 +3,7 @@
 A PWA (Progressive Web App) for managing the hostel choir's songs, lyrics, pitch, and Sunday planning.
 
 ## Live App
-👉 **[Your GitHub Pages URL here once deployed]**
+https://adventbird.github.io/Hostel-Choir/
 
 ## How to Install on Android
 1. Open the link above in **Chrome**
