@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0d0620">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hostel Choir">
+<meta name="description" content="Hostel Choir song manager — lyrics, pitch, Sunday planner">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Hostel Choir</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0620;--surface:#1a0d35;--surface2:#241244;--accent:#c9a84c;--accent2:#e8c87a;
+  --text:#f0eaf8;--muted:#9980c4;--border:rgba(201,168,76,0.2);
+  --entrance:#4a90d9;--glory:#e8884a;--mercy:#7bc47f;--hosanna:#c47bbc;
+  --offertory:#d4a843;--communion:#5bb8d4;--recessional:#e07070;
+  --font-head:'Playfair Display',serif;--font-body:'DM Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar h1{font-family:var(--font-head);font-size:20px;color:var(--accent2);letter-spacing:0.5px}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.leader-badge{background:var(--accent);color:#1a0a2e;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:500}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;padding:6px 12px;font-size:13px;font-family:var(--font-body);transition:all 0.2s}
+.icon-btn:hover{background:var(--surface2);color:var(--accent);border-color:var(--accent)}
+.icon-btn.leader-btn{border-color:var(--accent);color:var(--accent)}
+.nav{display:flex;overflow-x:auto;background:var(--surface);border-bottom:1px solid var(--border);scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-tab{flex-shrink:0;padding:10px 16px;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap}
+.nav-tab.active{color:var(--accent2);border-bottom-color:var(--accent)}
+.search-bar{padding:12px 16px}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:var(--font-body);font-size:14px;outline:none}
+.search-input::placeholder{color:var(--muted)}
+.search-input:focus{border-color:var(--accent)}
+.section-head{padding:8px 16px 4px;font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+.song-card{margin:6px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:12px}
+.song-card:hover{background:var(--surface2);border-color:var(--accent)}
+.song-card.stale{border-left:3px solid var(--accent)}
+.cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.song-info{flex:1;min-width:0}
+.song-name{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.pitch-badge{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:12px;color:var(--accent);flex-shrink:0}
+.overlay{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto}
+.overlay.open{display:block}
+.overlay-header{background:var(--surface);padding:16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.back-btn{background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;padding:0;margin-bottom:10px;font-family:var(--font-body);display:flex;align-items:center;gap:4px}
+.overlay-title{font-family:var(--font-head);font-size:22px}
+.overlay-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.detail-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{border-radius:8px;padding:8px 14px;font-size:13px;font-family:var(--font-body);cursor:pointer;transition:all 0.2s;border:1px solid var(--border)}
+.btn-primary{background:var(--accent);color:#1a0a2e;border-color:var(--accent);font-weight:500}
+.btn-secondary{background:var(--surface2);color:var(--text)}
+.btn-ghost{background:none;color:var(--muted)}
+.btn-danger{background:none;color:#e07070;border-color:rgba(224,112,112,0.3)}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.detail-meta{display:flex;gap:8px;padding:12px 16px;flex-wrap:wrap}
+.meta-chip{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px}
+.meta-chip span{color:var(--muted);font-size:11px;display:block}
+.meta-chip strong{color:var(--text)}
+.lyrics-section{padding:16px;padding-bottom:32px}
+.lyrics-section h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.lyrics-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.part-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;margin-top:14px}
+.part-label:first-child{margin-top:0}
+.lyrics-text{font-size:15px;line-height:1.9;white-space:pre-wrap}
+.planner-view{padding:16px;padding-bottom:80px}
+.planner-slot{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.planner-slot-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.planner-slot-name{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.planner-slot-song{padding:8px 14px 12px;font-size:13px;color:var(--muted);border-top:1px solid var(--border)}
+.planner-slot-song.selected{color:var(--text)}
+.select-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--accent);cursor:pointer;font-family:var(--font-body)}
+.mini-song-list{padding:8px 0;max-height:180px;overflow-y:auto}
+.mini-song-item{padding:8px 14px;font-size:13px;cursor:pointer;border-radius:6px;margin:2px 8px;transition:background 0.15s;color:var(--text)}
+.mini-song-item:hover{background:var(--surface2)}
+.copy-plan-btn{width:100%;margin-top:16px;padding:14px;background:var(--accent);border:none;border-radius:12px;color:#1a0a2e;font-size:15px;font-weight:500;font-family:var(--font-body);cursor:pointer}
+.rec-card{margin:8px 16px;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:14px;cursor:pointer;transition:all 0.2s}
+.rec-card:hover{background:var(--surface2)}
+.rec-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.rec-name{font-size:16px;font-weight:500}
+.rec-reason{font-size:12px;color:var(--muted);margin-top:4px}
+.add-form{padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:80px}
+.form-group label{font-size:11px;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;transition:border-color 0.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group select option{background:#1a0d35}
+.form-group textarea{resize:vertical;min-height:150px;line-height:1.6}
+.hint{font-size:11px;color:var(--muted);margin-top:5px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 14px;cursor:pointer;gap:3px;transition:color 0.2s;color:var(--muted);font-size:10px;border:none;background:none;font-family:var(--font-body)}
+.bnav-item.active{color:var(--accent2)}
+.bnav-icon{font-size:20px}
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-icon{font-size:40px;opacity:0.4;margin-bottom:12px}
+.empty-title{font-size:16px;color:var(--text);margin-bottom:6px;font-family:var(--font-head)}
+.empty-sub{font-size:13px;line-height:1.6}
+.page{display:none;padding-bottom:80px}
+.page.active{display:block}
+.page-header{padding:16px 16px 4px}
+.page-header h2{font-family:var(--font-head);font-size:22px;color:var(--accent2)}
+.page-header p{font-size:13px;color:var(--muted);margin-top:4px}
+.sync-indicator{font-size:11px;color:var(--muted);padding:4px 16px;display:flex;align-items:center;gap:6px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--mercy);flex-shrink:0}
+.sync-dot.syncing{background:var(--accent);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#1a0a2e;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:300px;max-width:90vw}
+.modal h3{font-family:var(--font-head);font-size:20px;margin-bottom:6px}
+.modal p{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.modal input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--font-body);font-size:16px;outline:none;letter-spacing:3px;text-align:center;margin-bottom:12px}
+.modal input:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px}
+.modal-actions .btn{flex:1;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>✦ Hostel Choir</h1>
+  <div class="topbar-right">
+    <span id="leaderBadge" style="display:none" class="leader-badge">Leader</span>
+    <button class="icon-btn leader-btn" id="leaderToggleBtn" onclick="handleLeaderToggle()">🔒 Leader</button>
+    <button class="icon-btn" id="addSongBtn" onclick="openAddSong()" style="display:none">+ Add</button>
+  </div>
+</div>
+
+<div id="syncBar" class="sync-indicator">
+  <div class="sync-dot syncing" id="syncDot"></div>
+  <span id="syncText">Connecting...</span>
+</div>
+
+<div id="page-songs" class="page active">
+  <div class="search-bar">
+    <input class="search-input" placeholder="Search songs or lyrics..." id="searchInput" oninput="renderSongs()">
+  </div>
+  <div class="nav">
+    <div class="nav-tab active" onclick="setCategory(this,'all')">All</div>
+    <div class="nav-tab" onclick="setCategory(this,'entrance')">Entrance</div>
+    <div class="nav-tab" onclick="setCategory(this,'glory')">Gloria</div>
+    <div class="nav-tab" onclick="setCategory(this,'mercy')">Kyrie</div>
+    <div class="nav-tab" onclick="setCategory(this,'hosanna')">Hosanna</div>
+    <div class="nav-tab" onclick="setCategory(this,'offertory')">Offertory</div>
+    <div class="nav-tab" onclick="setCategory(this,'communion')">Communion</div>
+    <div class="nav-tab" onclick="setCategory(this,'recessional')">Recessional</div>
+  </div>
+  <div id="songList"></div>
+</div>
+
+<div id="page-planner" class="page">
+  <div class="planner-view" id="plannerView"></div>
+</div>
+
+<div id="page-recommend" class="page">
+  <div class="page-header"><h2>Suggestions</h2><p>Songs overdue for a repeat</p></div>
+  <div id="recList"></div>
+</div>
+
+<div class="overlay" id="detailView">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeOverlay('detailView')">← Back</button>
+    <div class="overlay-title" id="detailTitle"></div>
+    <div class="overlay-sub" id="detailCat"></div>
+    <div class="detail-actions" id="detailActions"></div>
+  </div>
+  <div class="detail-meta" id="detailMeta"></div>
+  <div class="lyrics-section">
+    <h3>Lyrics</h3>
+    <div class="lyrics-block" id="detailLyrics"></div>
+  </div>
+</div>
+
+<div class="overlay" id="addSongView">
+  <div class="overlay-header">
+    <button class="back-btn" onclick="closeOverlay('addSongView')">← Back</button>
+    <div class="overlay-title">Add New Song</div>
+    <div class="overlay-sub">Fill in the details below</div>
+  </div>
+  <div class="add-form">
+    <div class="form-group"><label>Song Title *</label><input id="newTitle" placeholder="e.g. How Great Thou Art"></div>
+    <div class="form-group"><label>Category *</label>
+      <select id="newCat">
+        <option value="entrance">Entrance</option>
+        <option value="glory">Gloria</option>
+        <option value="mercy">Kyrie / Lord Have Mercy</option>
+        <option value="hosanna">Hosanna / Sanctus</option>
+        <option value="offertory">Offertory</option>
+        <option value="communion">Communion</option>
+        <option value="recessional">Recessional</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Pitch / Key</label><input id="newPitch" placeholder="e.g. G, Bb, C#"></div>
+    <div class="form-group">
+      <label>Lyrics</label>
+      <textarea id="newLyrics" placeholder="Paste lyrics here...&#10;&#10;Use [Verse 1], [Chorus], [Bridge] to label sections"></textarea>
+      <div class="hint">Sections like [Verse], [Chorus] will render as labels</div>
+    </div>
+    <button class="btn btn-primary" style="padding:13px;font-size:15px" id="saveSongBtn" onclick="saveNewSong()">Save Song</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="passcodeModal">
+  <div class="modal">
+    <h3>Leader Access</h3>
+    <p>Enter the leader passcode to unlock edit controls</p>
+    <input type="password" id="passcodeInput" placeholder="••••" maxlength="20" onkeydown="if(event.key==='Enter')checkPasscode()">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="checkPasscode()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="bnav-item active" onclick="showPage('songs',this)"><span class="bnav-icon">♪</span>Songs</button>
+  <button class="bnav-item" onclick="showPage('planner',this)"><span class="bnav-icon">☀</span>Sunday</button>
+  <button class="bnav-item" onclick="showPage('recommend',this)"><span class="bnav-icon">★</span>Suggest</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- ⚙️ TO CHANGE PASSCODE: edit the value below -->
+<script>const LEADER_PASSCODE = "choir2025";</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+// ⚙️ YOUR FIREBASE CONFIG — do not change this
+const firebaseConfig = {
+  apiKey: "AIzaSyAzg1pvFVXZgSo_IgOPgOvn7hgG_kbUKMY",
+  authDomain: "hostel-choir.firebaseapp.com",
+  projectId: "hostel-choir",
+  storageBucket: "hostel-choir.firebasestorage.app",
+  messagingSenderId: "624868112612",
+  appId: "1:624868112612:web:99b4830faeb996a75194f1"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const CAT_COLORS={entrance:'#4a90d9',glory:'#e8884a',mercy:'#7bc47f',hosanna:'#c47bbc',offertory:'#d4a843',communion:'#5bb8d4',recessional:'#e07070'};
+const CAT_NAMES={entrance:'Entrance',glory:'Gloria',mercy:'Kyrie',hosanna:'Hosanna',offertory:'Offertory',communion:'Communion',recessional:'Recessional'};
+const SLOTS=['entrance','glory','mercy','hosanna','offertory','communion','recessional'];
+
+let songs=[], planner={}, currentCat='all', currentSongId=null, openSlot=null, isLeader=false;
+
+function setSyncStatus(syncing,text){
+  document.getElementById('syncDot').className='sync-dot'+(syncing?' syncing':'');
+  document.getElementById('syncText').textContent=text;
+}
+
+onSnapshot(collection(db,'songs'),snap=>{
+  songs=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderSongs();
+  if(document.getElementById('page-recommend').classList.contains('active')) renderRecommend();
+  setSyncStatus(false,'Live — syncing across all phones');
+},err=>{ setSyncStatus(false,'Offline — check connection'); });
+
+onSnapshot(doc(db,'shared','planner'),snap=>{
+  planner=snap.exists()?snap.data():{};
+  if(document.getElementById('page-planner').classList.contains('active')) renderPlanner();
+});
+
+window.handleLeaderToggle=function(){
+  if(isLeader){ isLeader=false; updateLeaderUI(); showToast('Leader mode off'); return; }
+  document.getElementById('passcodeModal').classList.add('open');
+  setTimeout(()=>document.getElementById('passcodeInput').focus(),100);
+};
+window.checkPasscode=function(){
+  if(document.getElementById('passcodeInput').value===window.LEADER_PASSCODE){
+    isLeader=true; updateLeaderUI(); closeModal(); showToast('Leader mode unlocked ✓');
+  } else { showToast('Wrong passcode'); document.getElementById('passcodeInput').value=''; }
+};
+window.closeModal=function(){ document.getElementById('passcodeModal').classList.remove('open'); document.getElementById('passcodeInput').value=''; };
+
+function updateLeaderUI(){
+  document.getElementById('leaderBadge').style.display=isLeader?'inline':'none';
+  document.getElementById('leaderToggleBtn').textContent=isLeader?'🔓 Leader':'🔒 Leader';
+  document.getElementById('addSongBtn').style.display=isLeader?'inline':'none';
+  if(currentSongId) openDetail(currentSongId);
+  if(document.getElementById('page-planner').classList.contains('active')) renderPlanner();
+}
+
+window.setCategory=function(el,cat){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); currentCat=cat; renderSongs();
+};
+
+function daysSince(iso){ if(!iso)return 9999; return Math.floor((Date.now()-new Date(iso).getTime())/86400000); }
+
+function renderSongs(){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  const list=document.getElementById('songList');
+  const filtered=songs.filter(s=>{
+    const matchCat=currentCat==='all'||s.category===currentCat;
+    const matchQ=!q||s.title.toLowerCase().includes(q)||(s.lyrics||'').toLowerCase().includes(q);
+    return matchCat&&matchQ;
+  });
+  if(songs.length===0){
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">♪</div><div class="empty-title">No songs yet</div><div class="empty-sub">${isLeader?'Tap <strong>+ Add</strong> to add your first song':'Ask the choir leader to add songs'}</div></div>`;
+    return;
+  }
+  if(filtered.length===0){ list.innerHTML='<div class="empty-state"><div class="empty-sub">No songs match your search</div></div>'; return; }
+  const grouped={};
+  filtered.forEach(s=>{ if(!grouped[s.category])grouped[s.category]=[]; grouped[s.category].push(s); });
+  let html='';
+  SLOTS.forEach(cat=>{
+    if(!grouped[cat])return;
+    if(currentCat==='all') html+=`<div class="section-head">${CAT_NAMES[cat]}</div>`;
+    grouped[cat].forEach(s=>{
+      const days=daysSince(s.lastSung);
+      const stale=s.lastSung&&days>21;
+      const lastLabel=s.lastSung?(days===0?'Sung today':'Sung '+days+' days ago'):'Never sung';
+      html+=`<div class="song-card${stale?' stale':''}" onclick="openDetail('${s.id}')">
+        <div class="cat-dot" style="background:${CAT_COLORS[s.category]}"></div>
+        <div class="song-info"><div class="song-name">${s.title}</div><div class="song-meta">${lastLabel}</div></div>
+        ${s.pitch?`<div class="pitch-badge">${s.pitch}</div>`:''}
+      </div>`;
+    });
+  });
+  list.innerHTML=html;
+}
+window.renderSongs=renderSongs;
+
+window.openDetail=function(id){
+  const s=songs.find(x=>x.id===id); if(!s)return;
+  currentSongId=id;
+  document.getElementById('detailTitle').textContent=s.title;
+  document.getElementById('detailCat').textContent=CAT_NAMES[s.category]||s.category;
+  const days=daysSince(s.lastSung);
+  document.getElementById('detailMeta').innerHTML=`
+    <div class="meta-chip"><span>Pitch / Key</span><strong>${s.pitch||'Not set'}</strong></div>
+    <div class="meta-chip"><span>Category</span><strong>${CAT_NAMES[s.category]||s.category}</strong></div>
+    <div class="meta-chip"><span>Last Sung</span><strong>${s.lastSung?(days===0?'Today':days+' days ago'):'Never'}</strong></div>`;
+  const lyrics=s.lyrics||'No lyrics added yet.';
+  const parts=lyrics.split(/\[([^\]]+)\]/g);
+  let lhtml='';
+  if(parts.length<=1){ lhtml=`<div class="lyrics-text">${lyrics}</div>`; }
+  else { for(let i=0;i<parts.length;i++){ if(i%2===1) lhtml+=`<div class="part-label">${parts[i]}</div>`; else if(parts[i].trim()) lhtml+=`<div class="lyrics-text">${parts[i].trim()}</div>`; } }
+  document.getElementById('detailLyrics').innerHTML=lhtml;
+  let actions=`<button class="btn btn-secondary" onclick="copyLyrics()">Copy Lyrics</button>`;
+  if(isLeader){
+    actions=`<button class="btn btn-primary" onclick="markSungToday()">✓ Sung Today</button>`+actions+
+    `<button class="btn btn-ghost" onclick="openPitchEdit()">Edit Pitch</button>
+     <button class="btn btn-danger" onclick="deleteSong()">Delete</button>`;
+  }
+  document.getElementById('detailActions').innerHTML=actions;
+  document.getElementById('detailView').classList.add('open');
+};
+
+window.closeOverlay=function(id){ document.getElementById(id).classList.remove('open'); };
+
+window.markSungToday=async function(){
+  if(!currentSongId||!isLeader)return;
+  const s=songs.find(x=>x.id===currentSongId);
+  await updateDoc(doc(db,'songs',currentSongId),{lastSung:new Date().toISOString()});
+  showToast((s?s.title:'Song')+' marked as sung ✓');
+  openDetail(currentSongId);
+};
+
+window.copyLyrics=function(){
+  const s=songs.find(x=>x.id===currentSongId); if(!s)return;
+  const text=`*${s.title}*\n${CAT_NAMES[s.category]||s.category}${s.pitch?' — Key: '+s.pitch:''}\n\n${s.lyrics||''}`;
+  navigator.clipboard.writeText(text).then(()=>showToast('Lyrics copied!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Lyrics copied!');
+  });
+};
+
+window.openPitchEdit=function(){
+  if(!isLeader)return;
+  const s=songs.find(x=>x.id===currentSongId); if(!s)return;
+  const np=prompt('Set pitch/key for "'+s.title+'":', s.pitch||'');
+  if(np!==null){ updateDoc(doc(db,'songs',currentSongId),{pitch:np.trim()}); showToast('Pitch updated'); }
+};
+
+window.deleteSong=async function(){
+  if(!isLeader)return;
+  const s=songs.find(x=>x.id===currentSongId); if(!s)return;
+  if(!confirm('Delete "'+s.title+'"? This cannot be undone.'))return;
+  await deleteDoc(doc(db,'songs',currentSongId));
+  closeOverlay('detailView'); showToast('Song deleted');
+};
+
+window.openAddSong=function(){ document.getElementById('addSongView').classList.add('open'); };
+
+window.saveNewSong=async function(){
+  if(!isLeader)return;
+  const title=document.getElementById('newTitle').value.trim();
+  if(!title){showToast('Please enter a title');return;}
+  const btn=document.getElementById('saveSongBtn');
+  btn.disabled=true; btn.textContent='Saving...';
+  await setDoc(doc(db,'songs','song_'+Date.now()),{
+    title, category:document.getElementById('newCat').value,
+    pitch:document.getElementById('newPitch').value.trim(),
+    lyrics:document.getElementById('newLyrics').value.trim(),
+    lastSung:null, addedAt:new Date().toISOString()
+  });
+  btn.disabled=false; btn.textContent='Save Song';
+  document.getElementById('newTitle').value='';
+  document.getElementById('newPitch').value='';
+  document.getElementById('newLyrics').value='';
+  closeOverlay('addSongView');
+  showToast('Added: '+title+' ✓');
+};
+
+window.renderPlanner=function(){
+  let html=`<div class="page-header"><h2>Sunday Planner</h2><p>${isLeader?'You can select songs for this Sunday':'Set by the choir leader — updates live'}</p></div>`;
+  SLOTS.forEach(key=>{
+    const catSongs=songs.filter(s=>s.category===key);
+    const selId=planner[key];
+    const selSong=selId?songs.find(s=>s.id===selId):null;
+    const isOpen=openSlot===key&&isLeader;
+    html+=`<div class="planner-slot">
+      <div class="planner-slot-head">
+        <div class="planner-slot-name"><div style="width:10px;height:10px;border-radius:50%;background:${CAT_COLORS[key]}"></div>${CAT_NAMES[key]}</div>
+        ${isLeader?`<button class="select-btn" onclick="toggleSlot('${key}')">${isOpen?'Done':'Select'}</button>`:`<span style="font-size:11px;color:var(--muted)">leader only</span>`}
+      </div>
+      <div class="planner-slot-song${selSong?' selected':''}">${selSong?selSong.title+(selSong.pitch?' — '+selSong.pitch:''):'No song selected'}</div>
+      ${isOpen?`<div class="mini-song-list">${catSongs.length?catSongs.map(s=>`<div class="mini-song-item" onclick="selectPlannerSong('${key}','${s.id}')">${s.title}${s.pitch?' <span style="color:var(--accent);font-size:11px">'+s.pitch+'</span>':''}</div>`).join(''):'<div style="padding:10px 14px;font-size:13px;color:var(--muted)">No songs in this category yet</div>'}</div>`:''}
+    </div>`;
+  });
+  const anySelected=SLOTS.some(k=>planner[k]);
+  html+=`<button class="copy-plan-btn" onclick="copyPlan()">${anySelected?'Copy Plan for WhatsApp':'Copy Plan (empty)'}</button>`;
+  document.getElementById('plannerView').innerHTML=html;
+};
+window.renderPlanner=window.renderPlanner;
+
+window.toggleSlot=function(key){ openSlot=openSlot===key?null:key; window.renderPlanner(); };
+
+window.selectPlannerSong=async function(key,id){
+  if(!isLeader)return;
+  await setDoc(doc(db,'shared','planner'),{...planner,[key]:id});
+  openSlot=null;
+};
+
+window.copyPlan=function(){
+  let text='🎵 *Sunday Song Plan*\n\n';
+  SLOTS.forEach(key=>{
+    const s=planner[key]?songs.find(x=>x.id===planner[key]):null;
+    text+=`*${CAT_NAMES[key]}:* ${s?s.title+(s.pitch?' ('+s.pitch+')':''):'—'}\n`;
+  });
+  navigator.clipboard.writeText(text).then(()=>showToast('Plan copied for WhatsApp!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied!');
+  });
+};
+
+function renderRecommend(){
+  if(songs.length===0){
+    document.getElementById('recList').innerHTML=`<div class="empty-state"><div class="empty-icon">★</div><div class="empty-title">No songs yet</div><div class="empty-sub">Add songs first to get suggestions</div></div>`;
+    return;
+  }
+  const scored=[...songs].map(s=>({...s,days:daysSince(s.lastSung)})).sort((a,b)=>b.days-a.days);
+  document.getElementById('recList').innerHTML=scored.slice(0,10).map(s=>`
+    <div class="rec-card" onclick="openDetail('${s.id}')">
+      <div class="rec-label">${CAT_NAMES[s.category]||s.category}</div>
+      <div class="rec-name">${s.title}${s.pitch?` <span style="color:var(--muted);font-size:13px;font-weight:400">— ${s.pitch}</span>`:''}</div>
+      <div class="rec-reason">${s.days===9999?'Never been sung':'Not sung for '+s.days+' days'}</div>
+    </div>`).join('');
+}
+window.renderRecommend=renderRecommend;
+
+window.showPage=function(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el)el.classList.add('active');
+  if(name==='planner') window.renderPlanner();
+  if(name==='recommend') renderRecommend();
+};
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+window.showToast=showToast;
+
+setSyncStatus(true,'Connecting...');
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(err=>console.log('SW error:',err));
+  });
+}
+</script>
+</body>
+</html>
