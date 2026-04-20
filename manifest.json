@@ -2,7 +2,7 @@
   "name": "Hostel Choir",
   "short_name": "Choir",
   "description": "Song manager for the hostel choir — lyrics, pitch, Sunday planner",
-  "start_url": "/",
+  "start_url": "https://adventbird.github.io/Hostel-Choir/",
   "display": "standalone",
   "background_color": "#0d0620",
   "theme_color": "#0d0620",
